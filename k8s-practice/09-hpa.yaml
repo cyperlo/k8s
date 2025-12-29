@@ -1,0 +1,38 @@
+# HorizontalPodAutoscaler 示例 - 自动扩缩容
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: nginx-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: nginx-deployment
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70  # CPU 使用率超过 70% 时扩容
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80  # 内存使用率超过 80% 时扩容
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300  # 缩容前等待 5 分钟
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60  # 每分钟最多缩容 50%
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 30  # 每 30 秒最多扩容 100%

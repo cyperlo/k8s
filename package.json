@@ -1,0 +1,25 @@
+{
+  "name": "k8s-learning-guide",
+  "version": "1.0.0",
+  "description": "Kubernetes 学习指南 - 从零开始系统学习 K8s",
+  "scripts": {
+    "docs:dev": "vuepress dev docs",
+    "docs:build": "vuepress build docs"
+  },
+  "keywords": [
+    "kubernetes",
+    "k8s",
+    "docker",
+    "devops",
+    "cloud-native"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@vuepress/bundler-vite": "^2.0.0-rc.26",
+    "@vuepress/client": "^2.0.0-rc.26",
+    "@vuepress/theme-default": "^2.0.0-rc.121",
+    "sass-embedded": "^1.97.1",
+    "vuepress": "^2.0.0-rc.26"
+  }
+}

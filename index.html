@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes 学习文档导航</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 40px 20px;
+        }
+
+        header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .search-box {
+            max-width: 600px;
+            margin: 0 auto 40px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 15px 50px 15px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 50px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            outline: none;
+        }
+
+        .search-box::after {
+            content: "🔍";
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 20px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .doc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .doc-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .doc-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+
+        .doc-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .doc-card p {
+            color: #666;
+            line-height: 1.6;
+            font-size: 0.95em;
+        }
+
+        .doc-card .icon {
+            font-size: 1.5em;
+        }
+
+        .doc-card .badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            margin-top: 10px;
+        }
+
+        .practice-list {
+            list-style: none;
+            margin-top: 15px;
+        }
+
+        .practice-list li {
+            background: #f8f9fa;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            transition: all 0.2s ease;
+        }
+
+        .practice-list li:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .practice-list a {
+            color: #333;
+            text-decoration: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .practice-list a:hover {
+            color: #667eea;
+        }
+
+        .file-icon {
+            color: #667eea;
+            margin-right: 8px;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            padding: 30px;
+            margin-top: 40px;
+        }
+
+        footer a {
+            color: white;
+            text-decoration: none;
+            border-bottom: 1px solid white;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .stat-item {
+            background: rgba(255,255,255,0.2);
+            padding: 15px 25px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 150px;
+        }
+
+        .stat-item .number {
+            font-size: 2em;
+            font-weight: bold;
+            display: block;
+        }
+
+        .stat-item .label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2em;
+            }
+
+            .doc-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section {
+                padding: 20px;
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Markdown 查看器样式 */
+        .markdown-viewer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            display: none;
+            overflow: auto;
+            padding: 20px;
+        }
+
+        .markdown-viewer.active {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .markdown-content {
+            background: white;
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            margin: 20px;
+            position: relative;
+        }
+
+        .close-btn {
+            position: sticky;
+            top: 10px;
+            right: 10px;
+            float: right;
+            background: #667eea;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: #764ba2;
+            transform: rotate(90deg);
+        }
+
+        /* Markdown 内容样式 */
+        .markdown-content h1 {
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+
+        .markdown-content h2 {
+            color: #764ba2;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 8px;
+        }
+
+        .markdown-content h3 {
+            color: #555;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .markdown-content h4 {
+            color: #666;
+            margin-top: 15px;
+            margin-bottom: 8px;
+        }
+
+        .markdown-content p {
+            line-height: 1.8;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .markdown-content ul, .markdown-content ol {
+            margin-left: 25px;
+            margin-bottom: 15px;
+            line-height: 1.8;
+        }
+
+        .markdown-content li {
+            margin-bottom: 8px;
+        }
+
+        .markdown-content code {
+            background: #f5f5f5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #e83e8c;
+            font-size: 0.9em;
+        }
+
+        .markdown-content pre {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-bottom: 15px;
+        }
+
+        .markdown-content pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+            font-size: 0.9em;
+        }
+
+        .markdown-content blockquote {
+            border-left: 4px solid #667eea;
+            padding-left: 15px;
+            margin: 15px 0;
+            color: #666;
+            font-style: italic;
+        }
+
+        .markdown-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+
+        .markdown-content table th,
+        .markdown-content table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .markdown-content table th {
+            background: #667eea;
+            color: white;
+        }
+
+        .markdown-content table tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        .markdown-content a {
+            color: #667eea;
+            text-decoration: none;
+            border-bottom: 1px solid #667eea;
+        }
+
+        .markdown-content a:hover {
+            color: #764ba2;
+            border-bottom-color: #764ba2;
+        }
+
+        .markdown-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .markdown-content hr {
+            border: none;
+            border-top: 2px solid #e0e0e0;
+            margin: 30px 0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        @media (max-width: 768px) {
+            .markdown-content {
+                padding: 20px;
+                margin: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Markdown 查看器 -->
+    <div class="markdown-viewer" id="markdownViewer">
+        <div class="markdown-content">
+            <button class="close-btn" onclick="closeMarkdown()">×</button>
+            <div id="markdownBody" class="loading">加载中</div>
+        </div>
+    </div>
+
+    <div class="container"></div>
+        <header>
+            <h1>🚀 Kubernetes 学习文档</h1>
+            <p>从零开始，系统学习 Kubernetes 容器编排技术</p>
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="number">5</span>
+                    <span class="label">学习指南</span>
+                </div>
+                <div class="stat-item">
+                    <span class="number">9</span>
+                    <span class="label">实践示例</span>
+                </div>
+                <div class="stat-item">
+                    <span class="number">1</span>
+                    <span class="label">完整项目</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="搜索文档...">
+        </div>
+
+        <!-- 学习指南 -->
+        <div class="section" data-category="guide">
+            <h2>📚 学习指南</h2>
+            <div class="doc-grid">
+                <div class="doc-card" onclick="openMarkdown('k8s-learning-roadmap.md')">
+                    <h3><span class="icon">🗺️</span> Kubernetes 学习路线</h3>
+                    <p>完整的 4-6 周学习计划，包含环境搭建、核心概念、实践项目和进阶内容。适合有 Docker 基础的开发者。</p>
+                    <span class="badge">推荐入门</span>
+                </div>
+
+                <div class="doc-card" onclick="openMarkdown('linux-setup-guide.md')">
+                    <h3><span class="icon">🐧</span> Linux 环境搭建</h3>
+                    <p>详细的 Linux 环境搭建指南，支持 Ubuntu/Debian 和 CentOS/RHEL，包含 Minikube、Kind、K3s 等多种方案。</p>
+                    <span class="badge">环境配置</span>
+                </div>
+
+                <div class="doc-card" onclick="alert('文档正在编写中...')">
+                    <h3><span class="icon">🧩</span> K8s 组件详解</h3>
+                    <p>深入讲解 Kubernetes 核心组件的工作原理和配置方法。</p>
+                    <span class="badge">待完善</span>
+                </div>
+
+                <div class="doc-card" onclick="alert('文档正在编写中...')">
+                    <h3><span class="icon">📖</span> K8s 组件指南</h3>
+                    <p>Kubernetes 各个组件的使用指南和最佳实践。</p>
+                    <span class="badge">待完善</span>
+                </div>
+
+                <div class="doc-card" onclick="alert('文档正在编写中...')">
+                    <h3><span class="icon">💡</span> K8s 实践指南</h3>
+                    <p>实战经验总结和常见问题解决方案。</p>
+                    <span class="badge">待完善</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 实践示例 -->
+        <div class="section" data-category="practice">
+            <h2>🛠️ 实践示例</h2>
+            <p style="color: #666; margin-bottom: 15px;">按顺序学习，循序渐进掌握 Kubernetes 核心概念</p>
+            <ul class="practice-list">
+                <li>
+                    <a href="k8s-practice/01-basic-pod.yaml" target="_blank">
+                        <span><span class="file-icon">📄</span> 01 - 基础 Pod 配置</span>
+                        <span>→</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="k8s-practice/02-deployment.yaml" target="_blank">
+                        <span><span class="file-icon">📄</span> 02 - Deployment 部署</span>
+                        <span>→</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="k8s-practice/03-service.yaml" target="_blank">
+                        <span><span class="file-icon">📄</span> 03 - Service 服务暴露</span>
+                        <span>→</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="k8s-practice/04-configmap-secret.yaml" target="_blank">
+                        <span><span class="file-icon">📄</span> 04 - ConfigMap 和 Secret</span>
+                        <span>→</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="k8s-practice/05-persistent-volume.yaml" target="_blank">
+                        <span><span class="file-icon">📄</span> 05 - 持久化存储</span>
+                        <span>→</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="k8s-practice/06-health-checks.yaml" target="_blank">
+                        <span><span class="file-icon">📄</span> 06 - 健康检查探针</span>
+                        <span>→</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="k8s-practice/07-ingress.yaml" target="_blank">
+                        <span><span class="file-icon">📄</span> 07 - Ingress 流量管理</span>
+                        <span>→</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="k8s-practice/08-namespace.yaml" target="_blank">
+                        <span><span class="file-icon">📄</span> 08 - Namespace 资源隔离</span>
+                        <span>→</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="k8s-practice/09-hpa.yaml" target="_blank">
+                        <span><span class="file-icon">📄</span> 09 - 水平自动扩缩容</span>
+                        <span>→</span>
+                    </a>
+                </li>
+            </ul>
+            <div style="margin-top: 20px;">
+                <a href="javascript:void(0)" onclick="openMarkdown('k8s-practice/README.md')" style="color: #667eea; text-decoration: none; font-weight: bold;"></a>
+                    📖 查看实践示例说明文档 →
+                </a>
+            </div>
+        </div>
+
+        <!-- 完整项目 -->
+        <div class="section" data-category="project">
+            <h2>🎯 完整项目</h2>
+            <div class="doc-card" onclick="openMarkdown('demo-microservice/README.md')" style="cursor: pointer;">
+                <h3><span class="icon">🏗️</span> 微服务应用 Demo</h3>
+                <p>
+                    <strong>完整的生产级微服务应用示例</strong><br><br>
+                    包含：前端（Nginx）、后端 API（Flask）、数据库（MySQL）、缓存（Redis）<br>
+                    涵盖：服务发现、配置管理、数据持久化、流量管理、健康检查、资源管理等核心概念<br><br>
+                    <strong>项目结构：</strong>
+                </p>
+                <ul style="margin-top: 10px; margin-left: 20px; color: #666;">
+                    <li>📁 app/ - 应用代码（前端 + 后端）</li>
+                    <li>📁 k8s/ - Kubernetes 配置文件</li>
+                    <li>📁 scripts/ - 部署和测试脚本</li>
+                </ul>
+                <span class="badge">实战项目</span>
+                <span class="badge">生产级</span>
+            </div>
+        </div>
+
+        <!-- 快速链接 -->
+        <div class="section">
+            <h2>🔗 快速链接</h2>
+            <div class="doc-grid">
+                <div class="doc-card" onclick="window.open('https://kubernetes.io/zh-cn/docs/home/', '_blank')">
+                    <h3><span class="icon">📚</span> Kubernetes 官方文档</h3>
+                    <p>最权威的 Kubernetes 学习资源</p>
+                </div>
+
+                <div class="doc-card" onclick="window.open('https://kubernetes.io/zh-cn/docs/tutorials/', '_blank')">
+                    <h3><span class="icon">🎓</span> 官方交互式教程</h3>
+                    <p>在线实践 Kubernetes 基础操作</p>
+                </div>
+
+                <div class="doc-card" onclick="window.open('https://labs.play-with-k8s.com/', '_blank')">
+                    <h3><span class="icon">🧪</span> Play with K8s</h3>
+                    <p>免费的在线 Kubernetes 实验环境</p>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>💡 建议：先阅读学习路线，搭建环境后按顺序完成实践示例，最后挑战完整项目</p>
+            <p style="margin-top: 10px; opacity: 0.8;">祝你学习顺利！🎉</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        // Markdown 查看器功能
+        async function openMarkdown(filePath) {
+            const viewer = document.getElementById('markdownViewer');
+            const body = document.getElementById('markdownBody');
+            
+            viewer.classList.add('active');
+            body.innerHTML = '<div class="loading">加载中</div>';
+            
+            try {
+                const response = await fetch(filePath);
+                if (!response.ok) throw new Error('文件加载失败');
+                
+                const markdown = await response.text();
+                const html = marked.parse(markdown);
+                body.innerHTML = html;
+                
+                // 滚动到顶部
+                viewer.scrollTop = 0;
+            } catch (error) {
+                body.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #e74c3c;">
+                        <h2>😕 加载失败</h2>
+                        <p>${error.message}</p>
+                        <p style="margin-top: 20px;">
+                            <a href="${filePath}" target="_blank" style="color: #667eea;">
+                                点击这里在新标签页中打开
+                            </a>
+                        </p>
+                    </div>
+                `;
+            }
+        }
+
+        function closeMarkdown() {
+            const viewer = document.getElementById('markdownViewer');
+            viewer.classList.remove('active');
+        }
+
+        // 点击背景关闭
+        document.getElementById('markdownViewer').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeMarkdown();
+            }
+        });
+
+        // ESC 键关闭
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeMarkdown();
+            }
+        });
+
+        // 搜索功能
+        const searchInput = document.getElementById('searchInput');
+        const sections = document.querySelectorAll('.section');
+        const docCards = document.querySelectorAll('.doc-card');
+        const practiceItems = document.querySelectorAll('.practice-list li');
+
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+
+            // 搜索文档卡片
+            docCards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // 搜索实践列表
+            practiceItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            // 隐藏空的 section
+            sections.forEach(section => {
+                const visibleCards = section.querySelectorAll('.doc-card:not([style*="display: none"])');
+                const visibleItems = section.querySelectorAll('.practice-list li:not([style*="display: none"])');
+                
+                if (visibleCards.length === 0 && visibleItems.length === 0 && searchTerm !== '') {
+                    section.style.display = 'none';
+                } else {
+                    section.style.display = 'block';
+                }
+            });
+        });
+
+        // 添加键盘快捷键
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + K 聚焦搜索框
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                searchInput.focus();
+            }
+        });
+
+        // 页面加载动画
+        window.addEventListener('load', function() {
+            const cards = document.querySelectorAll('.doc-card, .practice-list li');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    card.style.transition = 'all 0.5s ease';
+                    
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, 50);
+                }, index * 50);
+            });
+        });
+    </script>
+</body>
+</html>

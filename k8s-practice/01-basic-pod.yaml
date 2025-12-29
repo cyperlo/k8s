@@ -1,0 +1,13 @@
+# 基础 Pod 示例
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-first-pod
+  labels:
+    app: demo
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.21
+    ports:
+    - containerPort: 80
