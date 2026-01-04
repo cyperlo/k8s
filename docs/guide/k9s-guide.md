@@ -890,7 +890,133 @@ kubectl create clusterrolebinding k9s-viewer \
   --user=<your-username>
 ```
 
-#### 4. 日志不显示
+#### 4. TLS 证书验证失败（远程 k3s 集群）
+
+**问题表现：**
+```
+tls: failed to verify certificate: x509: certificate is valid for 10.0.12.17, 10.43.0.1, 127.0.0.1, ::1, not 49.235.43.230
+Unable to fetch server version
+Auth request failed
+```
+
+**原因分析：**
+k3s 的 TLS 证书默认只包含内网 IP 和本地地址，不包含公网 IP。当使用公网 IP 连接时会导致证书验证失败。
+
+**解决方法 1：重新生成包含公网 IP 的证书（推荐）**
+
+在 **k3s 服务器**上执行：
+
+```bash
+# 1. 停止 k3s
+sudo systemctl stop k3s
+
+# 2. 备份现有证书
+sudo cp -r /var/lib/rancher/k3s/server/tls /var/lib/rancher/k3s/server/tls.backup
+
+# 3. 删除旧证书
+sudo rm -rf /var/lib/rancher/k3s/server/tls
+
+# 4. 修改 k3s 配置，添加公网 IP
+sudo mkdir -p /etc/rancher/k3s
+sudo tee /etc/rancher/k3s/config.yaml > /dev/null <<EOF
+tls-san:
+  - <your-public-ip>
+  - <your-private-ip>
+EOF
+
+# 5. 重启 k3s（会自动重新生成证书）
+sudo systemctl start k3s
+
+# 6. 等待 k3s 启动完成
+sudo systemctl status k3s
+
+# 7. 导出新的 kubeconfig
+sudo cat /etc/rancher/k3s/k3s.yaml | sed "s/127.0.0.1/<your-public-ip>/g" > ~/k3s-config.yaml
+```
+
+在 **本地 Mac** 上执行：
+
+```bash
+# 1. 备份现有配置
+cp ~/.kube/config ~/.kube/config.backup
+
+# 2. 下载新的配置
+scp root@<server-ip>:~/k3s-config.yaml ~/.kube/config
+
+# 3. 设置权限
+chmod 600 ~/.kube/config
+
+# 4. 测试连接
+kubectl get nodes
+
+# 5. 启动 k9s
+k9s
+```
+
+**解决方法 2：跳过证书验证（临时测试用）**
+
+编辑本地 kubeconfig 文件：
+
+```bash
+# macOS
+vim ~/.kube/config
+
+# Linux
+vim ~/.kube/config
+```
+
+在 `cluster` 部分添加 `insecure-skip-tls-verify: true`：
+
+```yaml
+apiVersion: v1
+clusters:
+- cluster:
+    insecure-skip-tls-verify: true  # 添加这行
+    server: https://<your-server-ip>:6443
+  name: k3s
+# ... 其他配置
+```
+
+保存后测试：
+
+```bash
+kubectl get nodes
+k9s
+```
+
+**解决方法 3：使用内网 IP（如果可访问）**
+
+如果你的 Mac 可以访问服务器的内网 IP，修改 kubeconfig：
+
+```bash
+# macOS
+sed -i '' 's/<public-ip>/<private-ip>/g' ~/.kube/config
+
+# Linux
+sed -i 's/<public-ip>/<private-ip>/g' ~/.kube/config
+
+# 测试连接
+kubectl get nodes
+k9s
+```
+
+**验证步骤：**
+
+```bash
+# 1. 测试 kubectl 连接
+kubectl cluster-info
+
+# 2. 获取节点
+kubectl get nodes
+
+# 3. 查看详细日志（如果还有问题）
+kubectl get nodes -v=8
+
+# 4. 启动 k9s
+k9s
+```
+
+#### 5. 日志不显示
 
 **问题表现：**
 - 按 `l` 查看日志时没有输出
@@ -922,7 +1048,7 @@ kubectl logs <pod-name> -c <container-name> -n <namespace>
 # 4. 如果是多容器，按数字键选择容器
 ```
 
-#### 5. 性能问题（卡顿、延迟）
+#### 6. 性能问题（卡顿、延迟）
 
 **问题表现：**
 - k9s 响应缓慢
@@ -959,7 +1085,7 @@ free -h
 df -h
 ```
 
-#### 6. 编辑器问题
+#### 7. 编辑器问题
 
 **问题表现：**
 - 按 `e` 编辑资源时报错
@@ -990,7 +1116,7 @@ echo $EDITOR
 vim test.txt
 ```
 
-#### 7. Shell 进入容器失败
+#### 8. Shell 进入容器失败
 
 **问题表现：**
 - 按 `s` 无法进入容器
@@ -1021,7 +1147,7 @@ EOF
 kubectl debug <pod-name> -it --image=busybox
 ```
 
-#### 8. 端口转发失败
+#### 9. 端口转发失败
 
 **问题表现：**
 - 按 `p` 或 `Shift+f` 端口转发失败
@@ -1049,7 +1175,7 @@ kubectl port-forward pod/<pod-name> 8080:80 -n <namespace>
 # sudo iptables -L
 ```
 
-#### 9. 中文显示乱码
+#### 10. 中文显示乱码
 
 **问题表现：**
 - 中文字符显示为方块或乱码
@@ -1085,7 +1211,7 @@ source ~/.bashrc
 echo $TERM
 ```
 
-#### 10. 升级 k9s 后配置失效
+#### 11. 升级 k9s 后配置失效
 
 **问题表现：**
 - 升级后配置不生效

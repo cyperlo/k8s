@@ -1,6 +1,7 @@
 import { viteBundler } from '@vuepress/bundler-vite'
 import { defaultTheme } from '@vuepress/theme-default'
 import { defineUserConfig } from 'vuepress'
+import { searchPlugin } from '@vuepress/plugin-search'
 
 export default defineUserConfig({
   lang: 'zh-CN',
@@ -29,6 +30,8 @@ export default defineUserConfig({
           { text: 'k9s 完整指南', link: '/guide/k9s-guide' },
           { text: 'k9s 快速参考', link: '/guide/k9s-cheatsheet' },
           { text: '故障排查', link: '/guide/troubleshooting' },
+          { text: 'Telepresence', link: '/guide/telepresence-guide'}
+
         ],
       },
       {
@@ -37,7 +40,7 @@ export default defineUserConfig({
           { text: 'Kubernetes 官方文档', link: 'https://kubernetes.io/zh-cn/docs/home/' },
           { text: '官方交互式教程', link: 'https://kubernetes.io/zh-cn/docs/tutorials/' },
           { text: 'Play with K8s', link: 'https://labs.play-with-k8s.com/' },
-        ],
+        ]
       },
     ],
     
@@ -51,6 +54,7 @@ export default defineUserConfig({
             '/guide/k9s-guide.md',
             '/guide/k9s-cheatsheet.md',
             '/guide/troubleshooting.md',
+            '/guide/telepresence-guide.md',
           ],
         },
       ],
@@ -94,6 +98,26 @@ export default defineUserConfig({
     // 页面滚动
     smoothScroll: true,
   }),
+  
+  // 插件配置
+  plugins: [
+    searchPlugin({
+      // 搜索框占位符
+      locales: {
+        '/': {
+          placeholder: '搜索文档',
+        },
+      },
+      // 热键
+      hotKeys: ['s', '/'],
+      // 最大搜索建议数
+      maxSuggestions: 10,
+      // 是否在页面的标题中搜索
+      isSearchable: (page) => page.path !== '/',
+      // 获取页面的搜索索引
+      getExtraFields: (page) => page.frontmatter.tags ?? [],
+    }),
+  ],
   
   // 端口配置
   port: 8080,
