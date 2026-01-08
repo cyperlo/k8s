@@ -1,14 +1,180 @@
-# Service 示例 - 暴露 Nginx 服务
+# ============================================
+# Service 实战示例
+# ============================================
+
+# 例子 1：ClusterIP Service（默认类型，集群内部访问）
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-api
+  labels:
+    app: backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.21
+        ports:
+        - containerPort: 80
+
+---
 apiVersion: v1
 kind: Service
 metadata:
-  name: nginx-service
+  name: backend-service
+  labels:
+    app: backend
 spec:
+  type: ClusterIP  # 默认类型，只能在集群内访问
   selector:
-    app: nginx
+    app: backend   # 选择 app=backend 的 Pod
+  ports:
+  - name: http
+    protocol: TCP
+    port: 8080       # Service 端口
+    targetPort: 80   # Pod 容器端口
+
+# 访问方式（集群内）：
+# curl http://backend-service:8080
+# curl http://backend-service.default.svc.cluster.local:8080
+
+# ============================================
+# 例子 2：NodePort Service（可以从外部访问）
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-app
+  labels:
+    app: web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.21
+        ports:
+        - containerPort: 80
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-service
+  labels:
+    app: web
+spec:
   type: NodePort
+  selector:
+    app: web
   ports:
   - protocol: TCP
     port: 80
     targetPort: 80
-    # nodePort: 30080  # 可选：指定 NodePort 端口（范围 30000-32767）
+    nodePort: 30080  # 可以通过 <节点IP>:30080 访问
+
+# 访问方式：
+# 1. 获取节点 IP: kubectl get nodes -o wide
+# 2. 浏览器访问: http://<节点IP>:30080
+# 3. Minikube: minikube service web-service --url
+
+# ============================================
+# 例子 3：多端口 Service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: multi-port-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: multi-port
+  template:
+    metadata:
+      labels:
+        app: multi-port
+    spec:
+      containers:
+      - name: app
+        image: nginx:1.21
+        ports:
+        - name: http
+          containerPort: 80
+        - name: metrics
+          containerPort: 9090
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: multi-port-service
+spec:
+  selector:
+    app: multi-port
+  ports:
+  - name: http      # 多端口必须命名
+    port: 80
+    targetPort: http
+  - name: metrics
+    port: 9090
+    targetPort: metrics
+
+# ============================================
+# 例子 4：Headless Service（无 ClusterIP）
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: database-headless
+spec:
+  clusterIP: None  # Headless Service
+  selector:
+    app: database
+  ports:
+  - port: 3306
+    targetPort: 3306
+
+# 用途：StatefulSet、直接访问每个 Pod
+# DNS 会返回所有 Pod 的 IP 地址
+
+# ============================================
+# 测试命令
+# ============================================
+
+# 1. 部署所有资源
+# kubectl apply -f 03-service.yaml
+
+# 2. 查看 Service
+# kubectl get svc
+
+# 3. 查看 Endpoints（Service 关联的 Pod IP）
+# kubectl get endpoints
+
+# 4. 测试 ClusterIP Service（在集群内）
+# kubectl run -it --rm debug --image=busybox --restart=Never -- wget -O- http://backend-service:8080
+
+# 5. 测试 NodePort Service
+# curl http://localhost:30080
+
+# 6. 查看 Service 详情
+# kubectl describe svc backend-service
+
+# 7. 清理资源
+# kubectl delete -f 03-service.yaml

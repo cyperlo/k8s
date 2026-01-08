@@ -1,0 +1,140 @@
+# ============================================
+# 完整应用示例：Deployment + Service
+# 场景：部署一个 Web 应用，并通过 Service 暴露访问
+# ============================================
+
+# 第一步：创建 Deployment（管理 Pod）
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-web-app
+  labels:
+    app: web
+    tier: frontend
+spec:
+  replicas: 3  # 运行 3 个 Pod 副本
+  selector:
+    matchLabels:
+      app: web  # 这个标签必须和下面 template 的标签一致
+  template:
+    metadata:
+      labels:
+        app: web  # Pod 的标签，Service 会用这个标签选择 Pod
+        tier: frontend
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.21
+        ports:
+        - name: http
+          containerPort: 80  # 容器监听的端口
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+        livenessProbe:  # 存活检查
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        readinessProbe:  # 就绪检查
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 3
+
+# 第二步：创建 Service（暴露 Deployment 中的 Pod）
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-web-service
+  labels:
+    app: web
+spec:
+  type: NodePort  # 使用 NodePort 可以从外部访问
+  selector:
+    app: web  # 选择带有 app=web 标签的 Pod（就是上面 Deployment 创建的 Pod）
+  ports:
+  - name: http
+    protocol: TCP
+    port: 80        # Service 的端口
+    targetPort: 80  # Pod 的端口（对应 containerPort）
+    nodePort: 30080 # 外部访问端口（30000-32767）
+
+# ============================================
+# 工作原理
+# ============================================
+# 1. Deployment 创建 3 个 Pod，每个 Pod 都有标签 app=web
+# 2. Service 通过 selector: app=web 找到这 3 个 Pod
+# 3. Service 自动负载均衡到这 3 个 Pod
+# 4. 访问 Service 时，流量会分发到其中一个 Pod
+
+# ============================================
+# 部署和测试步骤
+# ============================================
+
+# 1. 部署应用
+# kubectl apply -f 10-complete-app.yaml
+
+# 2. 查看 Deployment
+# kubectl get deployment my-web-app
+# kubectl describe deployment my-web-app
+
+# 3. 查看 Pod（Deployment 创建的）
+# kubectl get pods -l app=web
+# kubectl get pods -o wide  # 查看 Pod IP
+
+# 4. 查看 Service
+# kubectl get svc my-web-service
+# kubectl describe svc my-web-service
+
+# 5. 查看 Endpoints（Service 关联的 Pod IP 列表）
+# kubectl get endpoints my-web-service
+# 你会看到 3 个 Pod 的 IP 地址
+
+# 6. 测试访问（集群内）
+# kubectl run -it --rm test --image=busybox --restart=Never -- wget -O- http://my-web-service
+
+# 7. 测试访问（集群外）
+# curl http://localhost:30080
+# 或者浏览器访问 http://localhost:30080
+
+# 8. 测试负载均衡
+# for i in {1..10}; do curl http://localhost:30080; echo ""; done
+
+# 9. 扩容测试
+# kubectl scale deployment my-web-app --replicas=5
+# kubectl get pods -l app=web
+# kubectl get endpoints my-web-service  # 会看到 5 个 Pod IP
+
+# 10. 缩容测试
+# kubectl scale deployment my-web-app --replicas=2
+# kubectl get endpoints my-web-service  # 会看到 2 个 Pod IP
+
+# 11. 清理资源
+# kubectl delete -f 10-complete-app.yaml
+
+# ============================================
+# 关键点理解
+# ============================================
+
+# 标签匹配：
+# - Deployment 的 spec.selector.matchLabels 必须匹配 template.metadata.labels
+# - Service 的 spec.selector 必须匹配 Pod 的 labels
+# - 这样 Service 才能找到 Deployment 创建的 Pod
+
+# 端口映射：
+# - containerPort: 80  → Pod 容器监听的端口
+# - targetPort: 80     → Service 转发到 Pod 的端口
+# - port: 80           → Service 自己的端口
+# - nodePort: 30080    → 外部访问的端口
+
+# 流量路径：
+# 外部请求 → NodePort(30080) → Service(80) → Pod(80) → 容器
