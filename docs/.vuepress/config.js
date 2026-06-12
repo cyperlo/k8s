@@ -27,6 +27,8 @@ export default defineUserConfig({
       {
         text: '工具指南',
         children: [
+          { text: 'Helm 完整指南', link: '/guide/helm-guide' },
+          { text: 'Helm 快速参考', link: '/guide/helm-cheatsheet' },
           { text: 'k9s 完整指南', link: '/guide/k9s-guide' },
           { text: 'k9s 快速参考', link: '/guide/k9s-cheatsheet' },
           { text: '故障排查', link: '/guide/troubleshooting' },
@@ -51,6 +53,8 @@ export default defineUserConfig({
           children: [
             '/guide/learning-roadmap.md',
             '/guide/linux-setup.md',
+            '/guide/helm-guide.md',
+            '/guide/helm-cheatsheet.md',
             '/guide/k9s-guide.md',
             '/guide/k9s-cheatsheet.md',
             '/guide/troubleshooting.md',

@@ -220,6 +220,8 @@ K3s 适合资源受限的环境和边缘计算。
 ```bash
 # 安装 K3s（自动启动）
 curl -sfL https://get.k3s.io | sh -
+# 国内源使用这个
+curl -sfL https://rancher-mirror.rancher.cn/k3s/k3s-install.sh | INSTALL_K3S_MIRROR=cn sh -
 
 # 检查状态
 sudo systemctl status k3s
